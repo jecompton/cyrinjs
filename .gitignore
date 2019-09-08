@@ -60,3 +60,5 @@ typings/
 # next.js build output
 .next
 
+# Ignore the local app config
+config/cyrin.yml
