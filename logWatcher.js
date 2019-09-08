@@ -14,13 +14,27 @@ const regex = /ERR|err|WARN|warn|fail|incorrect/;
 
 const publisher = zmq.socket('pub');
 
+const setLevel = data => {
+  const error_re = /ERR|err/;
+  const warn_re = /WARN|warn/;
+  if(error_re.test(data) === true) {
+    return 'error';
+  } else if(warn_re.test(data) === true) {
+    return 'warn';
+  } else {
+    return 'info';
+  }
+}
+
 logfiles.forEach(log => {
   let logtail = new Tail(log);
 
   logtail.on('line', data => {
-    if(regex.test(data) === true) {
+    let level = setLevel(data);
+    if(level === 'error' || level === 'warn') {
       publisher.send(JSON.stringify({
         log: log,
+        level: level,
         logline: data,
         msg_time: Date.now()
       }));
