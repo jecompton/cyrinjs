@@ -8,7 +8,7 @@ subscriber.subscribe('');
 subscriber.on('message', data => {
   const message = JSON.parse(data);
   const date = new Date(message.timestamp);
-  console.log(`${message.log}(${message.level}): ${message.logline}`);
+  console.log(`${message.log} (${message.level}): ${message.logline}`);
 });
 
 subscriber.connect("tcp://localhost:4260");

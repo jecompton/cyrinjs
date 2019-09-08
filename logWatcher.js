@@ -10,28 +10,28 @@ const config = yml.safeLoad(fs.readFileSync(CONFIG_PATH, 'utf-8'));
 
 const logfiles = config.logfiles;
 
-const regex = /ERR|err|WARN|warn|fail|incorrect/;
-
 const publisher = zmq.socket('pub');
 
 const setLevel = data => {
   const error_re = /ERR|err/;
   const warn_re = /WARN|warn/;
+  const info_re = /fail|incorrect/;
   if(error_re.test(data) === true) {
     return 'error';
   } else if(warn_re.test(data) === true) {
     return 'warn';
-  } else {
+  } else if(info_re.test(data) === true) {
     return 'info';
-  }
+  } 
 }
 
 logfiles.forEach(log => {
   let logtail = new Tail(log);
 
   logtail.on('line', data => {
+    const levels = ['error', 'warn', 'info'];
     let level = setLevel(data);
-    if(level === 'error' || level === 'warn') {
+    if(levels.includes(level)) {
       publisher.send(JSON.stringify({
         log: log,
         level: level,
