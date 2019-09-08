@@ -2,23 +2,30 @@
 const fs = require('fs')
 const zmq = require('zeromq');
 const Tail = require('tail').Tail;
+const yml = require('js-yaml');
 
-const logfile = '/var/log/syslog';
 
-const regex = /ERR|err|WARN|warn/;
+const CONFIG_PATH = 'config/cyrin.yml'
+const config = yml.safeLoad(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+
+const logfiles = config.logfiles;
+
+const regex = /ERR|err|WARN|warn|fail|incorrect/;
 
 const publisher = zmq.socket('pub');
 
-const logtail = new Tail(logfile);
+logfiles.forEach(log => {
+  let logtail = new Tail(log);
 
-logtail.on('line', data => {
-  if(regex.test(data) === true) {
-    publisher.send(JSON.stringify({
-      log: logfile,
-      logline: data,
-      msg_time: Date.now()
-    }));
-  };
+  logtail.on('line', data => {
+    if(regex.test(data) === true) {
+      publisher.send(JSON.stringify({
+        log: log,
+        logline: data,
+        msg_time: Date.now()
+      }));
+    };
+  });
 });
 
 publisher.bind('tcp://127.0.0.1:4260', err => {
