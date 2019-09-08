@@ -16,13 +16,14 @@ const setLevel = data => {
   const error_re = /ERR|err/;
   const warn_re = /WARN|warn/;
   const info_re = /fail|incorrect/;
+
   if(error_re.test(data) === true) {
     return 'error';
   } else if(warn_re.test(data) === true) {
     return 'warn';
   } else if(info_re.test(data) === true) {
     return 'info';
-  } 
+  }
 }
 
 logfiles.forEach(log => {
